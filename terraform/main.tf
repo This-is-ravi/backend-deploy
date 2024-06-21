@@ -40,7 +40,7 @@ resource "null_resource" "backend" {
     provisioner "remote-exec" { #to run that copied file we use remote exec
         inline = [
             "chmod +x /tmp/${var.common_tags.Component}.sh",  # giving execution permissions
-            "sudo sh /tmp/${var.common_tags.Component}.sh ${var.common_tags.Component} ${var.environment}"
+            "sudo sh /tmp/${var.common_tags.Component}.sh ${var.common_tags.Component} ${var.environment} ${var.app_version}" # it goes to backend.sh
         ]
     } 
 }
@@ -126,7 +126,7 @@ resource "aws_launch_template" "backend" {
 
 resource "aws_autoscaling_group" "backend" {
   name                      = "${var.project_name}-${var.environment}-${var.common_tags.Component}"
-  max_size                  = 5
+  max_size                  = 4
   min_size                  = 1
   health_check_grace_period = 60
   health_check_type         = "ELB"
@@ -178,7 +178,7 @@ resource "aws_autoscaling_policy" "backend" {
       predefined_metric_type = "ASGAverageCPUUtilization"
     }
 
-    target_value = 10.0
+    target_value = 70.0 # if cpu utilization is >70% , add the servers
   }
 }
 
